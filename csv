@@ -1,0 +1,49 @@
+##WORDCLOUD 
+## 03.09.2022
+
+
+#Install Packages
+install.packages("tm")  # for text mining
+install.packages("SnowballC") # for text stemming
+install.packages("wordcloud") # word-cloud generator 
+install.packages("RColorBrewer") # color palettes
+
+##Load Required Library
+
+library(tm)
+library(SnowballC)
+library(RColorBrewer)
+library(wordcloud)
+library(tm) #text mining
+library(dplyr)
+
+#Read the Data CSV
+words<-read.csv('Desktop/Book91.csv')
+
+#Text Mining
+str(words)
+words<-as.character(words)
+
+
+#Clean Up
+word.corpus<-Corpus(VectorSource(words)) #Corpus
+word.corpus<-word.corpus%>%
+tm_map(removePunctuation)%>% ##eliminate punctuation
+tm_map(removeNumbers)%>% #no numbers
+tm_map(stripWhitespace)#white spaces
+word.corpus<-word.corpus%>%
+tm_map(tolower)%>% ##make all words lowercase
+tm_map(removeWords, stopwords("english"))
+word.corpus <- tm_map(word.corpus, removeWords, c("the", "and","for","this","that","with","will","also","i'm", "success", "line")) 
+word.corpus<-tm_map(word.corpus, stemDocument)
+
+word.counts<-as.matrix(TermDocumentMatrix(word.corpus))
+word.freq<-sort(rowSums(word.counts), decreasing=TRUE)
+
+##What are the top words?
+head(word.freq) 
+set.seed(32) #be sure to set the seed if you want to reproduce the same again
+
+#Cloud - B&W
+wordcloud(words=names(word.freq), freq=word.freq, scale=c(2,.17),max.words = 100, random.order = TRUE)
+
